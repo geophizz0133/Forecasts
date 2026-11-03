@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buzzards Bay Race Dashboard — Marion, MA</title>
+<style>
+:root{
+  --bg:#08182a;--panel:#0f2740;--panel2:#143252;--text:#eaf3fb;--muted:#93a9bf;--line:#1f3f5f;--accent:#4cc3ff;
+  --go:#34d17a;--warn:#f6b93b;--nogo:#f0584f;--na:#8696a7;
+  --go-bg:rgba(52,209,122,.15);--warn-bg:rgba(246,185,59,.16);--nogo-bg:rgba(240,88,79,.17);--na-bg:rgba(134,150,167,.15);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root{--bg:#eef3f8;--panel:#ffffff;--panel2:#f2f6fa;--text:#102237;--muted:#5b7088;--line:#d6e0ea;--accent:#0a79c4;
+    --go:#13894a;--warn:#a86d00;--nogo:#c62d25;--na:#5b6b7b;
+    --go-bg:rgba(19,137,74,.12);--warn-bg:rgba(168,109,0,.13);--nogo-bg:rgba(198,45,37,.12);--na-bg:rgba(91,107,123,.12);
+    color-scheme:light;}
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:14px}
+h1{margin:0;font-size:1.45rem;letter-spacing:.01em}
+.sub{color:var(--muted);font-size:.85rem;margin-top:2px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h2{margin:0 0 12px;font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));margin-top:14px;align-items:stretch}
+.span{grid-column:1/-1}
+.maps{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.top{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.hdr-meta{display:flex;flex-wrap:wrap;gap:18px;align-items:center}
+.stat{display:flex;flex-direction:column}
+.lbl{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.val{font-weight:650}
+.hdr-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.auto{font-size:.8rem;color:var(--muted);display:flex;gap:6px;align-items:center}
+.btn{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:7px 12px;font:inherit;font-size:.85rem;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn:disabled{opacity:.55;cursor:progress}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#04121f;font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:.8rem}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.75rem;font-weight:700;white-space:nowrap}
+.c-go{color:var(--go)} .c-warn{color:var(--warn)} .c-nogo{color:var(--nogo)} .c-na{color:var(--na)}
+.pill.c-go{background:var(--go-bg)} .pill.c-warn{background:var(--warn-bg)} .pill.c-nogo{background:var(--nogo-bg)} .pill.c-na{background:var(--na-bg)}
+.badge{display:inline-block;padding:.25em .8em;border-radius:12px;font-weight:850;font-size:1.9rem;letter-spacing:.03em}
+.badge.c-go{background:var(--go-bg)} .badge.c-warn{background:var(--warn-bg)} .badge.c-nogo{background:var(--nogo-bg)} .badge.c-na{background:var(--na-bg)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:7px 14px;margin-top:14px}
+.kv div:nth-child(odd){color:var(--muted)}
+.kv div:nth-child(even){font-weight:700;text-align:right}
+.src{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.src:last-child{border-bottom:0}
+.src .nm{font-weight:650}
+.src .act{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.src .det{overflow-wrap:anywhere}
+.fac{display:grid;grid-template-columns:18px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.fac:last-child{border-bottom:0}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--na)}
+.dot.c-go{background:var(--go)} .dot.c-warn{background:var(--warn)} .dot.c-nogo{background:var(--nogo)}
+.trio{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.box{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:11px}
+.box .t{font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.box .big{font-size:1.25rem;font-weight:750}
+.arrow{width:18px;height:18px;vertical-align:-3px;margin-right:4px;color:var(--accent)}
+.disabled-note{background:var(--warn-bg);color:var(--warn);border-radius:9px;padding:8px 12px;font-weight:750;margin-bottom:10px}
+.tide-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.tide-state{font-size:1.9rem;font-weight:850}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+td.c-go{background:var(--go-bg)} td.c-warn{background:var(--warn-bg)} td.c-nogo{background:var(--nogo-bg)}
+tr.past td{opacity:.6}
+.tag{font-size:.65rem;border:1px solid var(--line);border-radius:6px;padding:0 5px;color:var(--muted);margin-left:4px;vertical-align:1px}
+.tune{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.tune .box .v{font-weight:650}
+.tune .box.mode{border-color:var(--accent)}
+.notes{margin:12px 0 0;padding-left:18px;color:var(--muted);font-size:.85rem}
+.err{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-color:var(--nogo);background:var(--nogo-bg);margin-top:14px}
+.info{margin-top:14px;border-color:var(--warn);background:var(--warn-bg)}
+iframe{width:100%;height:420px;border:0;border-radius:10px;background:var(--panel2)}
+.maphead{display:flex;justify-content:space-between;align-items:baseline}
+a{color:var(--accent)}
+footer{margin:18px 0 8px;color:var(--muted);font-size:.78rem;line-height:1.5}
+details.card summary{cursor:pointer;font-weight:700}
+.testrow{display:flex;gap:10px;margin:10px 0;flex-wrap:wrap}
+.testtbl td,.testtbl th{padding:4px 8px;font-size:.8rem;white-space:normal}
+@media (max-width:520px){.wrap{padding:10px}.badge{font-size:1.5rem}h1{font-size:1.2rem}iframe{height:340px}}
+</style>
+</head>
+<body>
+<div class="wrap" id="page">
+
+<header class="card top">
+  <div>
+    <h1>⛵ Buzzards Bay Race Dashboard</h1>
+    <div class="sub">Marion, MA · 41.67°N, 70.73°W · Tides: Woods Hole (8447930)</div>
+  </div>
+  <div class="hdr-meta">
+    <div class="stat"><span class="lbl">Race Date</span><span class="val" id="raceDate">—</span></div>
+    <div class="stat"><span class="lbl">Last Refresh</span><span class="val" id="lastRefresh">—</span></div>
+    <div class="hdr-actions">
+      <button class="btn primary" id="btnRefresh" type="button">↻ Refresh</button>
+      <button class="btn" id="btnSnap" type="button" title="Download this page as it looks right now">⬇ Snapshot</button>
+      <label class="auto"><input type="checkbox" id="chkAuto" checked> Auto-refresh 15 min</label>
+    </div>
+  </div>
+</header>
+
+<div id="banners"></div>
+
+<main class="grid">
+  <section class="card" aria-labelledby="h-src"><h2 id="h-src">Data Sources</h2><div id="bodySources"></div></section>
+  <section class="card" aria-labelledby="h-stat"><h2 id="h-stat">Race Status</h2><div id="bodyStatus"></div></section>
+  <section class="card" aria-labelledby="h-fac"><h2 id="h-fac">Triggering Factors</h2><div id="bodyFactors"></div></section>
+  <section class="card" aria-labelledby="h-wind"><h2 id="h-wind">Wind Consensus</h2><div id="bodyConsensus"></div></section>
+  <section class="card" aria-labelledby="h-tide"><h2 id="h-tide">Tide</h2><div id="bodyTide"></div></section>
+
+  <section class="card span" aria-labelledby="h-tbl">
+    <h2 id="h-tbl">Race Window Forecast</h2>
+    <div class="tablewrap" id="bodyTable"></div>
+    <p class="muted small" style="margin:10px 0 0">Wind, gust, precipitation and thunder show the highest value from any available source (conservative). Hover a wind cell for per-source values. 5:30 PM is interpolated between the 5:00 and 6:00 PM forecasts.</p>
+  </section>
+
+  <section class="card span" aria-labelledby="h-tune"><h2 id="h-tune">Frers 33 Tuning</h2><div id="bodyTuning"></div></section>
+
+  <div class="span maps">
+    <section class="card" aria-labelledby="h-radar">
+      <div class="maphead"><h2 id="h-radar">Radar</h2><a class="small" href="https://www.windy.com/?radar,41.67,-70.73,9" target="_blank" rel="noopener">Open full map ↗</a></div>
+      <iframe title="Radar map centered on Marion, MA" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        src="https://embed.windy.com/embed2.html?lat=41.67&amp;lon=-70.73&amp;detailLat=41.67&amp;detailLon=-70.73&amp;zoom=9&amp;level=surface&amp;overlay=radar&amp;product=radar&amp;menu=&amp;message=true&amp;marker=true&amp;calendar=now&amp;pressure=&amp;type=map&amp;location=coordinates&amp;detail=&amp;metricWind=mph&amp;metricTemp=%C2%B0F&amp;radarRange=-1"></iframe>
+    </section>
+    <section class="card" aria-labelledby="h-wmap">
+      <div class="maphead"><h2 id="h-wmap">Wind Map</h2><a class="small" href="https://www.windy.com/?wind,41.67,-70.73,9" target="_blank" rel="noopener">Open full map ↗</a></div>
+      <iframe title="Wind map centered on Marion, MA" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        src="https://embed.windy.com/embed2.html?lat=41.67&amp;lon=-70.73&amp;detailLat=41.67&amp;detailLon=-70.73&amp;zoom=9&amp;level=surface&amp;overlay=wind&amp;product=ecmwf&amp;menu=&amp;message=true&amp;marker=true&amp;calendar=now&amp;pressure=&amp;type=map&amp;location=coordinates&amp;detail=&amp;metricWind=mph&amp;metricTemp=%C2%B0F&amp;radarRange=-1"></iframe>
+    </section>
+  </div>
+
+  <details class="card span" id="diag" hidden>
+    <summary>Diagnostics &amp; tests</summary>
+    <div class="testrow">
+      <button class="btn" id="btnTests" type="button">Run unit &amp; boundary tests</button>
+      <button class="btn" id="btnRecovery" type="button">Run recovery test (live network)</button>
+    </div>
+    <div id="diagOut" class="small muted">Console hooks: <code>SailDash.runTests()</code>, <code>SailDash.simulate.fail('nws'|'om'|'noaa')</code>, <code>SailDash.retry('nws')</code>, <code>SailDash.simulate.clear()</code>. URL flags: <code>?debug=1</code>, <code>?test=1</code>, <code>?fail=nws,noaa</code>.</div>
+  </details>
+</main>
+
+<footer id="pageFooter">
+  <div>Sources: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (primary) · <a href="https://www.weather.gov/" target="_blank" rel="noopener">National Weather Service</a> (secondary) · <a href="https://tidesandcurrents.noaa.gov/stationhome.html?id=8447930" target="_blank" rel="noopener">NOAA CO-OPS 8447930</a> · Maps by <a href="https://www.windy.com/" target="_blank" rel="noopener">Windy</a> · Tuning from the <a href="http://www.frers33.com/faq/Frers%2033%20Tuning%20Guide%20Final.pdf" target="_blank" rel="noopener">Frers 33 Tuning Guide (2010)</a>.</div>
+  <div>Notes: Thunder % is derived — Open-Meteo from WMO weather code (95 → 60%, 96/99 → 80%), NWS from forecast wording (slight chance 20%, chance 40%, likely 65%, otherwise 80%). Flood/ebb is from Woods Hole water-level predictions (rising/falling), not current speed. Wind of exactly 20 mph is treated as MARGINAL. Advisory only — check the official NWS marine forecast and use your own judgment.</div>
+</footer>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* =====================================================================
+   CONFIG
+   ===================================================================== */
+const CONFIG = {
+  lat: 41.67,
+  lon: -70.73,
+  tz: 'America/New_York',
+  station: '8447930',
+  stationName: 'Woods Hole, MA',
+  slots: [
+    { h: 17, m: 30, label: '5:30 PM' },
+    { h: 18, m: 0,  label: '6:00 PM' },
+    { h: 19, m: 0,  label: '7:00 PM' },
+    { h: 20, m: 0,  label: '8:00 PM' }
+  ],
+  // Inclusive upper bounds of GO and MARGINAL (values are rounded to whole numbers first)
+  thresholds: {
+    wind:    { go: 15, marginal: 20 },
+    gust:    { go: 20, marginal: 25 },
+    precip:  { go: 50, marginal: 70 },
+    thunder: { go: 20, marginal: 50 }
+  },
+  wmoThunder: { 95: 60, 96: 80, 99: 80 },
+  MPH_PER_KT: 1.15078,
+  timeoutMs: 15000,
+  maxInterpGapMs: 2 * 3600 * 1000,
+  autoRefreshMs: 15 * 60 * 1000,
+  slackMinutes: 20
+};
+
+/* =====================================================================
+   LOGGING + UTILITIES
+   ===================================================================== */
+const log  = (...a) => console.log('[SailDash]', ...a);
+const warn = (...a) => console.warn('[SailDash]', ...a);
+const err  = (...a) => console.error('[SailDash]', ...a);
+
+const isNum = v => typeof v === 'number' && isFinite(v);
+const numOrNull = v => (v === null || v === undefined || v === '') ? null : (isFinite(+v) ? +v : null);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+const f0 = v => isNum(v) ? String(Math.round(v)) : '—';
+const $ = id => document.getElementById(id);
+const setHTML = (id, h) => { const el = $(id); if (el) el.innerHTML = h; };
+const setText = (id, t) => { const el = $(id); if (el) el.textContent = t; };
+
+/* ---------- Time zone helpers (everything is Eastern time, regardless of viewer's device) ---------- */
+const NY_PARTS = new Intl.DateTimeFormat('en-US', { timeZone: CONFIG.tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+const NY_TIME  = new Intl.DateTimeFormat('en-US', { timeZone: CONFIG.tz, hour: 'numeric', minute: '2-digit' });
+const NY_DATE  = new Intl.DateTimeFormat('en-US', { timeZone: CONFIG.tz, weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+const NY_STAMP = new Intl.DateTimeFormat('en-US', { timeZone: CONFIG.tz, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', timeZoneName: 'short' });
+
+function nyParts(ms) {
+  const p = {};
+  NY_PARTS.formatToParts(new Date(ms)).forEach(x => { p[x.type] = x.value; });
+  return { y: +p.year, m: +p.month, d: +p.day, h: (+p.hour) % 24, mi: +p.minute, s: +p.second };
+}
+function nyOffsetMs(ms) {
+  const p = nyParts(ms);
+  return Date.UTC(p.y, p.m - 1, p.d, p.h, p.mi, p.s) - Math.floor(ms / 1000) * 1000;
+}
+/** Convert a wall-clock Eastern time to a real instant (handles EDT/EST). */
+function nyToDate(y, m, d, h, mi) {
+  const guess = Date.UTC(y, m - 1, d, h, mi);
+  let t = guess - nyOffsetMs(guess);
+  t = guess - nyOffsetMs(t);
+  return new Date(t);
+}
+const fmtTime  = ms => NY_TIME.format(new Date(ms));
+const fmtDate  = ms => NY_DATE.format(new Date(ms));
+const fmtStamp = ms => NY_STAMP.format(new Date(ms));
+function fmtDur(mins) {
+  if (!isNum(mins)) return '—';
+  const m = Math.max(0, Math.round(mins));
+  const h = Math.floor(m / 60);
+  return h ? `${h}h ${String(m % 60).padStart(2, '0')}m` : `${m}m`;
+}
+
+/* ---------- Direction helpers ---------- */
+const CARD = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+const norm360 = d => ((d % 360) + 360) % 360;
+const degToCard = d => isNum(d) ? CARD[Math.round(norm360(d) / 22.5) % 16] : '—';
+const cardToDeg = s => { const i = CARD.indexOf(String(s || '').trim().toUpperCase()); return i < 0 ? null : i * 22.5; };
+const angDiff = (a, b) => { const d = Math.abs(norm360(a) - norm360(b)) % 360; return d > 180 ? 360 - d : d; };
+
+/** Vector (circular) average of wind directions, weighted by speed. Returns {dir, mag}; mag in 0..1 (1 = perfect agreement). */
+function vecAvg(items) {
+  const v = items.filter(i => isNum(i.dir));
+  if (!v.length) return { dir: null, mag: 0 };
+  let w = v.map(i => (isNum(i.w) && i.w > 0) ? i.w : 0);
+  if (w.every(x => x === 0)) w = v.map(() => 1);
+  let x = 0, y = 0, tw = 0;
+  v.forEach((i, k) => { const r = i.dir * Math.PI / 180; x += w[k] * Math.sin(r); y += w[k] * Math.cos(r); tw += w[k]; });
+  const mag = Math.hypot(x, y) / tw;
+  if (mag < 1e-6) return { dir: null, mag: 0 };
+  return { dir: norm360(Math.atan2(x, y) * 180 / Math.PI), mag };
+}
+function lerpN(a, b, f) {
+  if (!isNum(a) && !isNum(b)) return null;
+  if (!isNum(a)) return b;
+  if (!isNum(b)) return a;
+  return a + (b - a) * f;
+}
+function lerpDir(a, b, f) {
+  if (!isNum(a) && !isNum(b)) return null;
+  if (!isNum(a)) return b;
+  if (!isNum(b)) return a;
+  const d = ((b - a + 540) % 360) - 180; // shortest arc
+  return norm360(a + d * f);
+}
+
+/* =====================================================================
+   CLASSIFICATION
+   ===================================================================== */
+const RANK = { na: -1, go: 0, marginal: 1, nogo: 2 };
+const LABEL = { go: 'GO', marginal: 'MARGINAL', nogo: 'NO-GO', na: 'N/A' };
+const CLS = { go: 'c-go', marginal: 'c-warn', nogo: 'c-nogo', na: 'c-na' };
+
+function classify(metric, v) {
+  if (!isNum(v)) return 'na';
+  const r = Math.round(v), t = CONFIG.thresholds[metric];
+  if (r <= t.go) return 'go';
+  if (r <= t.marginal) return 'marginal';
+  return 'nogo';
+}
+function worst(levels) {
+  let w = 'na';
+  levels.forEach(l => { if (RANK[l] > RANK[w]) w = l; });
+  return w;
+}
+
+/* =====================================================================
+   DATA PARSING
+   ===================================================================== */
+function parseNwsWind(str) {
+  if (str == null) return null;
+  const s = String(str).toLowerCase();
+  if (s.includes('calm')) return { mean: 0, max: 0 };
+  const nums = (s.match(/\d+(?:\.\d+)?/g) || []).map(Number).slice(0, 2);
+  if (!nums.length) return null;
+  let f = 1;
+  if (s.includes('km/h')) f = 0.621371; else if (/\bkt|knot/.test(s)) f = CONFIG.MPH_PER_KT;
+  const lo = Math.min(...nums), hi = Math.max(...nums);
+  return { mean: (lo + hi) / 2 * f, max: hi * f };
+}
+function nwsThunder(text) {
+  const s = String(text || '').toLowerCase();
+  if (!/thunder|t-storm/.test(s)) return 0;
+  if (/slight chance|isolated/.test(s)) return 20;
+  if (/chance|scattered/.test(s)) return 40;
+  if (/likely|numerous/.test(s)) return 65;
+  return 80;
+}
+function parseOpenMeteo(j) {
+  if (!j || j.error) throw new Error(j && j.reason ? 'Open-Meteo: ' + j.reason : 'Open-Meteo returned an error');
+  const h = j.hourly;
+  if (!h || !Array.isArray(h.time) || !h.time.length) throw new Error('Open-Meteo response is missing hourly data');
+  const need = ['temperature_2m', 'precipitation_probability', 'wind_speed_10m', 'wind_gusts_10m', 'wind_direction_10m', 'weather_code'];
+  const missing = need.filter(k => !Array.isArray(h[k]));
+  if (missing.length) throw new Error('Open-Meteo response is missing: ' + missing.join(', '));
+  const out = [];
+  h.time.forEach((ts, i) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(ts);
+    if (!m) return;
+    const t = nyToDate(+m[1], +m[2], +m[3], +m[4], +m[5]).getTime();
+    const code = numOrNull(h.weather_code[i]);
+    out.push({
+      t, temp: numOrNull(h.temperature_2m[i]), precip: numOrNull(h.precipitation_probability[i]),
+      wind: numOrNull(h.wind_speed_10m[i]), gust: numOrNull(h.wind_gusts_10m[i]), dir: numOrNull(h.wind_direction_10m[i]),
+      code, thunder: code == null ? null : (CONFIG.wmoThunder[code] || 0)
+    });
+  });
+  if (!out.length) throw new Error('Open-Meteo returned no usable hourly rows');
+  return out.sort((a, b) => a.t - b.t);
+}
+function parseNws(j) {
+  const p = j && j.properties && j.properties.periods;
+  if (!Array.isArray(p) || !p.length) throw new Error('NWS response is missing hourly periods');
+  const out = [];
+  p.forEach(per => {
+    const t = Date.parse(per.startTime);
+    if (!isFinite(t)) return;
+    const w = parseNwsWind(per.windSpeed), g = parseNwsWind(per.windGust);
+    let temp = numOrNull(per.temperature);
+    if (per.temperatureUnit === 'C' && temp != null) temp = temp * 9 / 5 + 32;
+    const pp = per.probabilityOfPrecipitation;
+    out.push({
+      t, temp, precip: numOrNull(pp && pp.value), wind: w ? w.mean : null, gust: g ? g.max : null,
+      dir: cardToDeg(per.windDirection), thunder: nwsThunder(per.shortForecast), text: per.shortForecast || ''
+    });
+  });
+  if (!out.length) throw new Error('NWS returned no usable hourly rows');
+  return out.sort((a, b) => a.t - b.t);
+}
+function parseNoaa(j) {
+  if (!j) throw new Error('NOAA returned an empty response');
+  if (j.error) throw new Error('NOAA: ' + (j.error.message || 'request error'));
+  const p = j.predictions;
+  if (!Array.isArray(p) || !p.length) throw new Error('NOAA returned no tide predictions');
+  const out = [];
+  p.forEach(e => {
+    const m = /^(\d{4})-(\d{2})-(\d{2}) (\d{1,2}):(\d{2})/.exec(e.t);
+    if (!m) return;
+    out.push({ t: Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]), type: String(e.type || '').trim().toUpperCase().startsWith('H') ? 'H' : 'L', v: numOrNull(e.v) });
+  });
+  if (!out.length) throw new Error('NOAA predictions could not be parsed');
+  return out.sort((a, b) => a.t - b.t);
+}
+
+/* =====================================================================
+   SAMPLING / INTERPOLATION
+   ===================================================================== */
+const NUM_FIELDS = ['temp', 'precip', 'wind', 'gust', 'thunder'];
+/** Sample an hourly series at instant t (ms). Exact hours return as-is; other times are interpolated. Returns null if t is outside the data. */
+function sampleSeries(series, t) {
+  if (!Array.isArray(series) || !series.length || !isNum(t)) return null;
+  let lo = null, hi = null;
+  for (const p of series) {
+    if (p.t <= t) lo = p;
+    if (p.t >= t) { hi = p; break; }
+  }
+  if (!lo || !hi) return null;
+  if (lo === hi || lo.t === hi.t) return Object.assign({}, lo, { interpolated: false });
+  if (hi.t - lo.t > CONFIG.maxInterpGapMs) return null;
+  const f = (t - lo.t) / (hi.t - lo.t);
+  const o = { t, interpolated: true };
+  NUM_FIELDS.forEach(k => { o[k] = lerpN(lo[k], hi[k], f); });
+  o.dir = lerpDir(lo.dir, hi.dir, f);
+  const a = lo.code, b = hi.code;
+  o.code = a == null ? b : b == null ? a : (f < 0.5 ? a : f > 0.5 ? b : Math.max(a, b));
+  o.text = f < 0.5 ? lo.text : hi.text;
+  return o;
+}
+function effRow(om, nws) {
+  const vals = k => [om && om[k], nws && nws[k]].filter(isNum);
+  const mx = k => { const v = vals(k); return v.length ? Math.max(...v) : null; };
+  const wind = mx('wind');
+  let gust = mx('gust');
+  if (gust != null && wind != null) gust = Math.max(gust, wind);
+  const temp = isNum(om && om.temp) ? om.temp : (nws && isNum(nws.temp) ? nws.temp : null);
+  let dir;
+  if (om && nws && isNum(om.dir) && isNum(nws.dir)) dir = vecAvg([{ dir: om.dir, w: om.wind }, { dir: nws.dir, w: nws.wind }]).dir;
+  else dir = isNum(om && om.dir) ? om.dir : (nws && isNum(nws.dir) ? nws.dir : null);
+  return { wind, gust, temp, precip: mx('precip'), thunder: mx('thunder'), dir };
+}
+
+/* =====================================================================
+   TIDES
+   ===================================================================== */
+function tideAt(events, t) {
+  if (!Array.isArray(events) || !events.length) return null;
+  let prev = null, next = null;
+  for (const e of events) { if (e.t <= t) prev = e; else { next = e; break; } }
+  if (!prev || !next) return null;
+  const f = (t - prev.t) / (next.t - prev.t);
+  const height = (isNum(prev.v) && isNum(next.v)) ? prev.v + (next.v - prev.v) * (1 - Math.cos(Math.PI * f)) / 2 : null;
+  const slack = Math.min(t - prev.t, next.t - t) <= CONFIG.slackMinutes * 60000;
+  return { state: next.type === 'H' ? 'Flood' : 'Ebb', height, slack, prev, next };
+}
+function buildTide(events, nowMs) {
+  if (!Array.isArray(events) || !events.length) return { available: false, reason: 'No tide data' };
+  const cur = tideAt(events, nowMs);
+  if (!cur) return { available: false, reason: 'Current time is outside the prediction range' };
+  return {
+    available: true, state: cur.state, height: cur.height, slack: cur.slack,
+    nextHigh: events.find(e => e.t > nowMs && e.type === 'H') || null,
+    nextLow: events.find(e => e.t > nowMs && e.type === 'L') || null,
+    change: cur.next, minsToChange: (cur.next.t - nowMs) / 60000
+  };
+}
+
+/* =====================================================================
+   WIND CONSENSUS
+   ===================================================================== */
+function windStats(rows, key) {
+  const pts = rows.map(r => r[key]).filter(s => s && isNum(s.wind));
+  if (!pts.length) return null;
+  const v = vecAvg(pts.map(p => ({ dir: p.dir, w: p.wind })));
+  const gusts = pts.map(p => p.gust).filter(isNum);
+  return { n: pts.length, speed: mean(pts.map(p => p.wind)), dir: v.dir, steadiness: v.mag, gustMax: gusts.length ? Math.max(...gusts) : null, windMax: Math.max(...pts.map(p => p.wind)) };
+}
+function confidence(dirDiff, spdDiff) {
+  const d = isNum(dirDiff) ? Math.max(0, 1 - dirDiff / 90) : 0.5;
+  const s = isNum(spdDiff) ? Math.max(0, 1 - spdDiff / 8) : 0.5;
+  const score = Math.round(100 * (0.5 * d + 0.5 * s));
+  return { score, level: score >= 75 ? 'High' : score >= 45 ? 'Medium' : 'Low' };
+}
+function buildConsensus(rows, hasOm, hasNws) {
+  const paired = rows.filter(r => r.om && r.nws && isNum(r.om.wind) && isNum(r.nws.wind));
+  if (!paired.length) {
+    const reason = !hasNws ? 'NWS unavailable' : !hasOm ? 'Open-Meteo unavailable' : 'No overlapping Open-Meteo/NWS data in the race window';
+    return { enabled: false, reason, om: windStats(rows, 'om'), nws: windStats(rows, 'nws') };
+  }
+  const om = windStats(paired, 'om'), nws = windStats(paired, 'nws');
+  const v = vecAvg([{ dir: om.dir, w: om.speed }, { dir: nws.dir, w: nws.speed }]);
+  const dirDiffs = paired.map(r => (isNum(r.om.dir) && isNum(r.nws.dir)) ? angDiff(r.om.dir, r.nws.dir) : null).filter(isNum);
+  const spdDiffs = paired.map(r => Math.abs(r.om.wind - r.nws.wind));
+  const dirDiff = dirDiffs.length ? mean(dirDiffs) : null, spdDiff = mean(spdDiffs);
+  return { enabled: true, n: paired.length, om, nws, speed: (om.speed + nws.speed) / 2, dir: v.dir, agreement: v.mag, dirDiff, spdDiff, confidence: confidence(dirDiff, spdDiff) };
+}
+
+/* =====================================================================
+   FRERS 33 TUNING (Frers 33 Tuning Guide, 2010 — upwind settings by true wind speed in knots)
+   ===================================================================== */
+const BANDS = [
+  { id: 'light', max: 6, mode: 'Light Air · 0–6 kt',
+    rake: 'Maximum aft rake — headstay ≈ 46′ 02″',
+    vang: 'Off',
+    cunningham: 'None (some wrinkles are fast)',
+    outhaul: 'Eased — about 2″ off the black band',
+    traveler: 'Boom on centerline; keep powered up, minimize tacks',
+    backstay: 'Snug — just removes slop; checkstay off',
+    crew: 'Low and to leeward; heel 10–12°. Under 4 kt keep weight forward',
+    headsail: 'Light #1, halyard hand-snug; leech 4–6″ off spreader, foot ≈ 6″ off shroud base', heel: '10–12°' },
+  { id: 'medium', max: 12, mode: 'Medium Air · 7–12 kt',
+    rake: 'Headstay ≈ 46′ 01″ — about 1″ forward of light-air setting',
+    vang: 'Snug',
+    cunningham: 'Remove wrinkles (≈ 50% on)',
+    outhaul: 'About 1–1.5″ off the black band',
+    traveler: 'Boom centerline to 3″ above; drop traveler a touch each time the helm loads',
+    backstay: '800–1,200 lbs; checkstay off to snug',
+    crew: 'Centered; keep the boat flat (5–10° heel)',
+    headsail: 'Light #1, halyard hand-tight and firming as breeze builds; leech 2–5″ off spreader, foot 1–2″ off shroud base', heel: '5–10°' },
+  { id: 'medheavy', max: 19, mode: 'Medium-Heavy Air · 13–19 kt',
+    rake: 'Headstay 46′ 00″ — all the way forward, reduced rake (cuts weather helm)',
+    vang: '≈ 50% on',
+    cunningham: 'Wrinkles out',
+    outhaul: 'On — within 1″ of / to the black band',
+    traveler: 'Boom centerline to 6″ below; drop traveler immediately when helm loads',
+    backstay: '2,000–3,000 lbs; checkstay ≈ 50% on',
+    crew: 'Hike hard; max heel 15–18°',
+    headsail: 'Heavy #1 (full crew) or #2; halyard firm, draft 40–45% aft; leech 0–10″+ off spreader to bleed top power. #3 near 15 kt with a small crew', heel: '15–18°' },
+  { id: 'heavy', max: Infinity, mode: 'Heavy Air · 20+ kt',
+    rake: 'Headstay 46′ 00″ — max forward, minimum rake',
+    vang: 'Tight',
+    cunningham: 'On tight',
+    outhaul: 'Maximum — to the black band',
+    traveler: 'Boom 6″ below centerline or more; drop as the helm demands',
+    backstay: 'Max ≈ 3,000 lbs; checkstay on tight',
+    crew: 'Hike harder; ≤ 20° heel, rail out of the water, pinch up in puffs',
+    headsail: '#3, halyard very firm; lead inside the shrouds on forward cars; leech 3–4″ inside upper spreader', heel: '18–20°' }
+];
+const mphToKt = mph => mph / CONFIG.MPH_PER_KT;
+function bandIndexForKt(kt) {
+  if (!isNum(kt)) return -1;
+  const r = Math.round(kt);
+  return BANDS.findIndex(b => r <= b.max);
+}
+function buildTuning(wind, gustMaxMph) {
+  let speed = null, basis = '';
+  if (wind.consensus.enabled) { speed = wind.consensus.speed; basis = 'Consensus wind (Open-Meteo + NWS)'; }
+  else if (wind.om) { speed = wind.om.speed; basis = 'Open-Meteo wind only — consensus disabled'; }
+  else if (wind.nws) { speed = wind.nws.speed; basis = 'NWS wind only — consensus disabled'; }
+  if (!isNum(speed)) return { available: false };
+  const kt = mphToKt(speed), idx = bandIndexForKt(kt), band = BANDS[idx];
+  const notes = [];
+  if (isNum(gustMaxMph)) {
+    const gi = bandIndexForKt(mphToKt(gustMaxMph));
+    if (gi > idx) notes.push(`Gusts to ${f0(gustMaxMph)} mph (${f0(mphToKt(gustMaxMph))} kt) reach the ${BANDS[gi].mode} range — be ready to drop traveler and ease vang in puffs.`);
+  }
+  notes.push('Settings are upwind starting points from the Frers 33 Tuning Guide (true wind speed, knots). The Frers goes fastest with a neutral helm — if the helm is heavy, adjust.');
+  return { available: true, basis, speedMph: speed, speedKt: kt, band, bandIndex: idx, notes };
+}
+
+/* =====================================================================
+   MODEL (pure function — used by the UI and by the tests)
+   ===================================================================== */
+function buildModel({ now, omSeries, nwsSeries, tideEvents }) {
+  const nowMs = (now instanceof Date) ? now.getTime() : now;
+  const day = nyParts(nowMs);
+  day.label = fmtDate(nyToDate(day.y, day.m, day.d, 12, 0).getTime());
+
+  const rows = CONFIG.slots.map(s => {
+    const t = nyToDate(day.y, day.m, day.d, s.h, s.m).getTime();
+    const om = omSeries ? sampleSeries(omSeries, t) : null;
+    const nws = nwsSeries ? sampleSeries(nwsSeries, t) : null;
+    const tide = tideEvents ? tideAt(tideEvents, t) : null;
+    return { label: s.label, t, om, nws, tide, eff: effRow(om, nws), interpolated: !!((om && om.interpolated) || (nws && nws.interpolated)), past: t < nowMs };
+  });
+
+  const maxes = {}, peaks = {}, levels = {};
+  ['wind', 'gust', 'precip', 'thunder'].forEach(k => {
+    let best = null, peak = null;
+    rows.forEach(r => { const v = r.eff[k]; if (isNum(v) && (best === null || v > best)) { best = v; peak = r.label; } });
+    maxes[k] = best; peaks[k] = peak; levels[k] = classify(k, best);
+  });
+  const level = worst(Object.values(levels));
+  const status = { level, label: level === 'na' ? 'UNAVAILABLE' : LABEL[level], maxes, peaks, levels };
+
+  const consensus = buildConsensus(rows, !!omSeries, !!nwsSeries);
+  const wind = { om: consensus.om, nws: consensus.nws, consensus };
+  const tuning = buildTuning(wind, maxes.gust);
+
+  return { now: nowMs, day, rows, status, wind, tuning, tide: buildTide(tideEvents, nowMs), windowPassed: nowMs > rows[rows.length - 1].t, hasWeather: rows.some(r => r.om || r.nws) };
+}
+
+/* =====================================================================
+   STATE + NETWORK
+   ===================================================================== */
+const state = {
+  om:   { status: 'idle', series: null, error: null, info: '', at: null },
+  nws:  { status: 'idle', series: null, error: null, info: '', at: null },
+  noaa: { status: 'idle', events: null, error: null, info: '', at: null },
+  lastRefresh: null, model: null
+};
+const sim = { fail: { om: false, nws: false, noaa: false }, delayMs: 0 };
+
+async function fetchJSON(url, source, opts) {
+  const retries = (opts && opts.retries != null) ? opts.retries : 1;
+  const timeout = (opts && opts.timeout) || CONFIG.timeoutMs;
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (sim.fail[source]) throw new Error('Simulated ' + source + ' failure (test hook)');
+    if (sim.delayMs) await sleep(sim.delayMs);
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeout);
+    try {
+      log(`fetch[${source}] attempt ${attempt + 1}/${retries + 1}`, url);
+      const res = await fetch(url, { signal: ctrl.signal });
+      if (!res.ok) { const e = new Error(`HTTP ${res.status}${res.statusText ? ' ' + res.statusText : ''}`); e.retryable = res.status >= 500 || res.status === 429; throw e; }
+      return await res.json();
+    } catch (e) {
+      if (e && e.name === 'AbortError') { lastErr = new Error(`Timed out after ${timeout / 1000}s`); lastErr.retryable = true; }
+      else { lastErr = e instanceof Error ? e : new Error(String(e)); if (lastErr.retryable === undefined) lastErr.retryable = true; }
+      warn(`fetch[${source}] failed:`, lastErr.message);
+      if (attempt < retries && lastErr.retryable) { await sleep(700 * (attempt + 1)); continue; }
+      throw lastErr;
+    } finally { clearTimeout(timer); }
+  }
+  throw lastErr;
+}
+
+async function loadOM() {
+  const s = state.om; s.status = 'loading'; s.error = null; commit();
+  try {
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + CONFIG.lat + '&longitude=' + CONFIG.lon +
+      '&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code' +
+      '&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=' + encodeURIComponent(CONFIG.tz) + '&forecast_days=2';
+    const j = await fetchJSON(url, 'om', { retries: 1 });
+    s.series = parseOpenMeteo(j); s.status = 'ok'; s.at = Date.now();
+    s.info = `${s.series.length} hourly rows`;
+    log('Open-Meteo OK', s.info);
+  } catch (e) { s.series = null; s.status = 'error'; s.error = e.message; err('Open-Meteo failed:', e.message); }
+  commit();
+}
+async function loadNWS() {
+  const s = state.nws; s.status = 'loading'; s.error = null; commit();
+  try {
+    const pts = await fetchJSON(`https://api.weather.gov/points/${CONFIG.lat},${CONFIG.lon}`, 'nws', { retries: 2 });
+    const hourlyUrl = pts && pts.properties && pts.properties.forecastHourly;
+    if (!hourlyUrl) throw new Error('NWS points response has no forecastHourly URL');
+    const grid = pts.properties.gridId ? `${pts.properties.gridId} ${pts.properties.gridX},${pts.properties.gridY}` : '';
+    log('NWS forecastHourly:', hourlyUrl);
+    const j = await fetchJSON(hourlyUrl, 'nws', { retries: 2 });
+    s.series = parseNws(j); s.status = 'ok'; s.at = Date.now();
+    s.info = `${s.series.length} hourly rows${grid ? ' · grid ' + grid : ''}`;
+    log('NWS OK', s.info);
+  } catch (e) { s.series = null; s.status = 'error'; s.error = e.message; err('NWS failed:', e.message); }
+  commit();
+}
+async function loadNOAA() {
+  const s = state.noaa; s.status = 'loading'; s.error = null; commit();
+  try {
+    const p = nyParts(Date.now());
+    const ymd = off => { const d = new Date(Date.UTC(p.y, p.m - 1, p.d + off)); return d.getUTCFullYear() + String(d.getUTCMonth() + 1).padStart(2, '0') + String(d.getUTCDate()).padStart(2, '0'); };
+    const url = 'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=BuzzardsBayDashboard' +
+      '&begin_date=' + ymd(-1) + '&end_date=' + ymd(2) + '&datum=MLLW&station=' + CONFIG.station +
+      '&time_zone=gmt&interval=hilo&units=english&format=json';
+    const j = await fetchJSON(url, 'noaa', { retries: 1 });
+    s.events = parseNoaa(j); s.status = 'ok'; s.at = Date.now();
+    s.info = `${s.events.length} high/low events · ${CONFIG.stationName}`;
+    log('NOAA OK', s.info);
+  } catch (e) { s.events = null; s.status = 'error'; s.error = e.message; err('NOAA failed:', e.message); }
+  commit();
+}
+const LOADERS = { om: loadOM, nws: loadNWS, noaa: loadNOAA };
+
+let refreshing = false;
+async function refreshAll(reason) {
+  if (refreshing) return;
+  refreshing = true;
+  const b = $('btnRefresh'); if (b) b.disabled = true;
+  log('refreshAll:', reason || 'manual');
+  await Promise.allSettled([loadOM(), loadNWS(), loadNOAA()]);
+  state.lastRefresh = Date.now();
+  commit(); logModel();
+  refreshing = false;
+  if (b) b.disabled = false;
+}
+async function retry(src) {
+  if (!LOADERS[src]) { warn('Unknown source', src); return; }
+  log('retry:', src);
+  await LOADERS[src]();
+  state.lastRefresh = Date.now();
+  commit(); logModel();
+}
+
+function logModel() {
+  const m = state.model; if (!m) return;
+  try {
+    log('Forecast rows (race window):');
+    console.table(m.rows.map(r => ({
+      time: r.label, interpolated: r.interpolated,
+      om_wind: r.om ? +r.om.wind.toFixed(1) : null, nws_wind: r.nws ? +(isNum(r.nws.wind) ? r.nws.wind.toFixed(1) : NaN) : null,
+      dir: isNum(r.eff.dir) ? Math.round(r.eff.dir) : null, wind: isNum(r.eff.wind) ? +r.eff.wind.toFixed(1) : null, gust: isNum(r.eff.gust) ? +r.eff.gust.toFixed(1) : null,
+      tide: r.tide ? r.tide.state : 'unavailable', tempF: isNum(r.eff.temp) ? +r.eff.temp.toFixed(1) : null, precip: r.eff.precip, thunder: r.eff.thunder
+    })));
+    log('Consensus:', m.wind.consensus);
+    log('Race status:', m.status.label, m.status.maxes, m.status.levels);
+    log('Tide:', m.tide);
+    log('Tuning:', m.tuning.available ? { band: m.tuning.band.mode, mph: m.tuning.speedMph, kt: m.tuning.speedKt, basis: m.tuning.basis } : 'unavailable');
+  } catch (e) { warn('logModel failed', e); }
+}
+
+/* =====================================================================
+   RENDERING
+   ===================================================================== */
+function commit() {
+  try {
+    state.model = buildModel({ now: new Date(), omSeries: state.om.series, nwsSeries: state.nws.series, tideEvents: state.noaa.events });
+  } catch (e) { err('Model build failed:', e); state.model = null; }
+  render();
+}
+const anyLoading = () => state.om.status === 'loading' || state.nws.status === 'loading' || state.noaa.status === 'loading';
+const arrow = deg => isNum(deg) ? `<svg class="arrow" viewBox="0 0 24 24" style="transform:rotate(${norm360(deg + 180)}deg)" aria-hidden="true"><path d="M12 2l6 9h-4v11h-4V11H6z" fill="currentColor"/></svg>` : '';
+const dirText = deg => isNum(deg) ? `${arrow(deg)}${degToCard(deg)} ${Math.round(deg)}°` : 'Variable';
+
+function safe(name, fn) { try { fn(); } catch (e) { err('render failed for', name, e); setHTML(name, `<div class="muted">This card failed to render (see console).</div>`); } }
+
+function render() {
+  const m = state.model;
+  setText('lastRefresh', state.lastRefresh ? fmtStamp(state.lastRefresh) : '—');
+  if (!m) { setHTML('banners', '<div class="card err" role="alert"><strong>The dashboard could not build its data model. Check the console and press Refresh.</strong></div>'); return; }
+  setText('raceDate', m.day.label);
+  safe('banners', () => renderBanners(m));
+  safe('bodySources', renderSources);
+  safe('bodyStatus', () => renderStatus(m));
+  safe('bodyFactors', () => renderFactors(m));
+  safe('bodyConsensus', () => renderConsensus(m));
+  safe('bodyTide', () => renderTide(m));
+  safe('bodyTable', () => renderTable(m));
+  safe('bodyTuning', () => renderTuning(m));
+}
+
+function renderBanners(m) {
+  let h = '';
+  if (state.om.status === 'error') {
+    h += `<div class="card err" role="alert"><div><strong>Open-Meteo is unavailable</strong><div class="muted">${esc(state.om.error)}</div>` +
+      `<div class="muted">${state.nws.status === 'ok' ? 'Showing NWS data only — wind consensus is disabled.' : 'No primary forecast data is available right now.'}</div></div>` +
+      `<button class="btn" type="button" data-retry="om">Retry Open-Meteo</button></div>`;
+  }
+  if (m.windowPassed) h += `<div class="card info">Today's race window (5:30–8:00 PM ET) has passed. Data shown is for today's window.</div>`;
+  setHTML('banners', h);
+}
+
+function renderSources() {
+  const items = [
+    ['om', 'Open-Meteo', 'Primary forecast'],
+    ['nws', 'National Weather Service', 'Secondary forecast · enables wind consensus'],
+    ['noaa', 'NOAA Tides', `CO-OPS ${CONFIG.station} · ${CONFIG.stationName}`]
+  ];
+  const pill = { ok: ['Online', 'c-go'], loading: ['Loading…', 'c-na'], error: ['Error', 'c-nogo'], idle: ['Idle', 'c-na'] };
+  setHTML('bodySources', items.map(([k, name, desc]) => {
+    const s = state[k], p = pill[s.status] || pill.idle;
+    const det = s.status === 'ok' ? `${esc(s.info)} · ${fmtTime(s.at)}` : s.status === 'error' ? esc(s.error) : s.status === 'loading' ? 'Fetching…' : 'Not loaded yet';
+    return `<div class="src"><div><div class="nm">${esc(name)}</div><div class="muted small">${esc(desc)}</div><div class="small det ${s.status === 'error' ? 'c-nogo' : 'muted'}">${det}</div></div>` +
+      `<div class="act"><span class="pill ${p[1]}">${p[0]}</span><button class="btn" type="button" data-retry="${k}" ${s.status === 'loading' ? 'disabled' : ''}>Retry</button></div></div>`;
+  }).join(''));
+}
+
+function renderStatus(m) {
+  const s = m.status;
+  const label = (s.level === 'na' && anyLoading()) ? 'LOADING…' : s.label;
+  const kv = (name, v, unit, k) => `<div>${name}</div><div class="${CLS[s.levels[k]]}">${isNum(v) ? Math.round(v) + ' ' + unit : '—'}</div>`;
+  setHTML('bodyStatus', `<span class="badge ${CLS[s.level]}">${esc(label)}</span>` +
+    `<div class="kv">${kv('Max Sustained Wind', s.maxes.wind, 'mph', 'wind')}${kv('Max Gust', s.maxes.gust, 'mph', 'gust')}${kv('Max Precipitation', s.maxes.precip, '%', 'precip')}${kv('Max Thunder', s.maxes.thunder, '%', 'thunder')}</div>` +
+    `<p class="muted small" style="margin:12px 0 0">Worst case across 5:30–8:00 PM, using the highest value from any available source.</p>`);
+}
+
+function renderFactors(m) {
+  const s = m.status;
+  const defs = [
+    ['wind', 'Sustained Wind', 'mph', 'GO ≤15 · MARGINAL 16–20 · NO-GO >20'],
+    ['gust', 'Gusts', 'mph', 'GO ≤20 · MARGINAL 21–25 · NO-GO >25'],
+    ['precip', 'Precipitation', '%', 'GO ≤50 · MARGINAL 51–70 · NO-GO >70'],
+    ['thunder', 'Thunder', '%', 'GO ≤20 · MARGINAL 21–50 · NO-GO >50']
+  ];
+  setHTML('bodyFactors', defs.map(([k, name, unit, th]) => {
+    const l = s.levels[k], v = s.maxes[k];
+    return `<div class="fac"><span class="dot ${CLS[l]}" aria-hidden="true"></span>` +
+      `<div><div style="font-weight:650">${name}</div><div class="muted small">${th} ${unit}</div></div>` +
+      `<div style="text-align:right"><span class="pill ${CLS[l]}">${LABEL[l]}</span><div class="muted small">${isNum(v) ? Math.round(v) + ' ' + unit + (s.peaks[k] ? ' @ ' + s.peaks[k] : '') : 'no data'}</div></div></div>`;
+  }).join(''));
+}
+
+function renderConsensus(m) {
+  const w = m.wind, c = w.consensus;
+  const block = (title, st) => `<div class="box"><div class="t">${title}</div>` +
+    (st ? `<div class="muted small">Direction</div><div class="big">${dirText(st.dir)}</div><div class="muted small" style="margin-top:6px">Wind</div><div class="big">${f0(st.speed)} mph</div>` : '<div class="muted">Unavailable</div>') + '</div>';
+  let h = '';
+  if (!c.enabled) h += `<div class="disabled-note">Consensus Disabled<div class="small" style="font-weight:500">${esc(c.reason)}${c.om ? ' — using Open-Meteo only.' : c.nws ? ' — using NWS only.' : ''}</div></div>`;
+  h += `<div class="trio">${block('Open-Meteo', w.om)}${block('NWS', w.nws)}`;
+  if (c.enabled) {
+    const cf = c.confidence;
+    h += `<div class="box" style="border-color:var(--accent)"><div class="t">Consensus</div><div class="muted small">Direction</div><div class="big">${dirText(c.dir)}</div><div class="muted small" style="margin-top:6px">Wind</div><div class="big">${f0(c.speed)} mph</div></div>`;
+    h += `</div><div style="margin-top:12px"><span class="muted small">Confidence </span><span class="pill ${cf.level === 'High' ? 'c-go' : cf.level === 'Medium' ? 'c-warn' : 'c-nogo'}">${cf.level}</span> <span class="muted small">score ${cf.score}/100 · direction Δ ${isNum(c.dirDiff) ? Math.round(c.dirDiff) + '°' : '—'} · speed Δ ${c.spdDiff.toFixed(1)} mph · ${c.n} race-window points</span></div>`;
+  } else {
+    h += `<div class="box"><div class="t">Consensus</div><div class="muted">Disabled</div></div></div>`;
+  }
+  h += `<p class="muted small" style="margin:10px 0 0">Race-window averages (5:30–8:00 PM). Direction is a speed-weighted vector average; speed is the mean of both sources.</p>`;
+  setHTML('bodyConsensus', h);
+}
+
+function renderTide(m) {
+  const t = m.tide;
+  if (!t.available) {
+    const why = state.noaa.status === 'error' ? state.noaa.error : state.noaa.status === 'loading' ? 'Loading…' : t.reason;
+    setHTML('bodyTide', `<div class="tide-state c-na">Tide unavailable</div><div class="muted small" style="margin-top:6px">${esc(why)}</div><p class="muted small">The rest of the dashboard keeps working. Use Retry in Data Sources.</p>`);
+    return;
+  }
+  const ev = e => e ? `${fmtTime(e.t)}${isNum(e.v) ? ' · ' + e.v.toFixed(1) + ' ft' : ''}` : '—';
+  setHTML('bodyTide', `<div class="tide-top"><span class="tide-state ${t.state === 'Flood' ? 'c-go' : 'c-warn'}">${t.state === 'Flood' ? '▲' : '▼'} ${t.state}</span>` +
+    `<span class="muted">${t.state === 'Flood' ? 'rising' : 'falling'}${t.slack ? ' · near slack' : ''}${isNum(t.height) ? ' · ≈ ' + t.height.toFixed(1) + ' ft now' : ''}</span></div>` +
+    `<div class="kv"><div>Next High Tide</div><div>${ev(t.nextHigh)}</div><div>Next Low Tide</div><div>${ev(t.nextLow)}</div>` +
+    `<div>Time to Tide Change</div><div>${fmtDur(t.minsToChange)} <span class="muted small">(${t.change.type === 'H' ? 'high' : 'low'} at ${fmtTime(t.change.t)})</span></div></div>` +
+    `<p class="muted small" style="margin:12px 0 0">Based on ${esc(CONFIG.stationName)} water-level predictions.</p>`);
+}
+
+function renderTable(m) {
+  const body = m.rows.map(r => {
+    const e = r.eff;
+    const cell = (k, txt) => `<td class="${CLS[classify(k, e[k])]}">${txt}</td>`;
+    const windTitle = `Open-Meteo ${r.om ? f0(r.om.wind) : '—'} mph · NWS ${r.nws ? f0(r.nws.wind) : '—'} mph`;
+    const tide = r.tide ? `${r.tide.state === 'Flood' ? '▲' : '▼'} ${r.tide.state}${r.tide.slack ? ' (slack)' : ''}` : '<span class="muted">Unavailable</span>';
+    return `<tr class="${r.past ? 'past' : ''}"><td><strong>${r.label}</strong>${r.interpolated ? '<span class="tag">interp.</span>' : ''}</td>` +
+      `<td>${isNum(e.dir) ? dirText(e.dir) : (isNum(e.wind) ? 'Variable' : '—')}</td>` +
+      `<td class="${CLS[classify('wind', e.wind)]}" title="${esc(windTitle)}">${isNum(e.wind) ? f0(e.wind) + ' mph' : '—'}</td>` +
+      cell('gust', isNum(e.gust) ? f0(e.gust) + ' mph' : '—') +
+      `<td>${tide}</td><td>${isNum(e.temp) ? f0(e.temp) + '°F' : '—'}</td>` +
+      cell('precip', isNum(e.precip) ? f0(e.precip) + '%' : '—') + cell('thunder', isNum(e.thunder) ? f0(e.thunder) + '%' : '—') + '</tr>';
+  }).join('');
+  setHTML('bodyTable', `<table><thead><tr><th>Time</th><th>Direction</th><th>Wind</th><th>Gust</th><th>Tide</th><th>Temp</th><th>Precip</th><th>Thunder</th></tr></thead><tbody>${body}</tbody></table>` +
+    (m.hasWeather ? '' : `<p class="muted" style="margin-top:10px">${anyLoading() ? 'Loading forecast…' : 'No forecast data available.'}</p>`));
+}
+
+function renderTuning(m) {
+  const t = m.tuning;
+  if (!t.available) { setHTML('bodyTuning', `<p class="muted">${anyLoading() ? 'Loading wind data…' : 'Tuning unavailable — no wind data.'}</p>`); return; }
+  const b = t.band;
+  const item = (name, val, cls) => `<div class="box ${cls || ''}"><div class="t">${name}</div><div class="v">${esc(val)}</div></div>`;
+  setHTML('bodyTuning',
+    `<div class="muted small" style="margin-bottom:10px">${esc(t.basis)}: <strong>${f0(t.speedMph)} mph (${f0(t.speedKt)} kt)</strong> average over the race window</div>` +
+    `<div class="tune">${item('Mode', b.mode, 'mode')}${item('Rake', b.rake)}${item('Vang', b.vang)}${item('Cunningham', b.cunningham)}${item('Outhaul', b.outhaul)}${item('Traveler', b.traveler)}${item('Backstay', b.backstay)}${item('Crew Position', b.crew)}${item('Headsail', b.headsail)}${item('Target Heel', b.heel)}</div>` +
+    `<ul class="notes">${t.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>`);
+}
+
+/* =====================================================================
+   SNAPSHOT (downloadable copy of the page as currently rendered)
+   ===================================================================== */
+function downloadSnapshot() {
+  try {
+    const clone = document.documentElement.cloneNode(true);
+    clone.querySelectorAll('script,button,#diag,.auto').forEach(el => el.remove());
+    const wrap = clone.querySelector('.wrap');
+    if (wrap) {
+      const note = document.createElement('div');
+      note.className = 'card info';
+      note.innerHTML = 'Static snapshot saved ' + esc(fmtStamp(Date.now())) + '. Live data is not refreshed in this copy.';
+      wrap.insertBefore(note, wrap.firstChild);
+    }
+    const html = '<!DOCTYPE html>\n' + clone.outerHTML;
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const p = nyParts(Date.now());
+    const name = `buzzards-bay-dashboard-${p.y}-${String(p.m).padStart(2, '0')}-${String(p.d).padStart(2, '0')}.html`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    log('Snapshot downloaded:', name);
+  } catch (e) { err('Snapshot failed', e); alert('Snapshot failed: ' + e.message); }
+}
+
+/* =====================================================================
+   TESTS (unit + boundary + recovery)
+   ===================================================================== */
+function runTests() {
+  const R = [];
+  const t = (name, fn) => { try { const ok = fn(); R.push({ test: name, pass: ok === true, detail: ok === true ? '' : String(ok) }); } catch (e) { R.push({ test: name, pass: false, detail: 'threw: ' + e.message }); } };
+  const eq = (a, b) => a === b || `expected ${b}, got ${a}`;
+  const near = (a, b, eps) => (isNum(a) && Math.abs(a - b) <= (eps == null ? 0.01 : eps)) || `expected ≈${b}, got ${a}`;
+
+  // --- Threshold boundaries ---
+  [[0,'go'],[15,'go'],[15.4,'go'],[15.5,'marginal'],[16,'marginal'],[19,'marginal'],[20,'marginal'],[20.5,'nogo'],[21,'nogo'],[40,'nogo'],[null,'na'],[NaN,'na']]
+    .forEach(([v, e]) => t(`sustained wind ${v} → ${e}`, () => eq(classify('wind', v), e)));
+  [[20,'go'],[20.4,'go'],[21,'marginal'],[25,'marginal'],[25.4,'marginal'],[26,'nogo']]
+    .forEach(([v, e]) => t(`gust ${v} → ${e}`, () => eq(classify('gust', v), e)));
+  [[50,'go'],[51,'marginal'],[70,'marginal'],[71,'nogo'],[100,'nogo'],[0,'go']]
+    .forEach(([v, e]) => t(`precip ${v} → ${e}`, () => eq(classify('precip', v), e)));
+  [[20,'go'],[21,'marginal'],[50,'marginal'],[51,'nogo']]
+    .forEach(([v, e]) => t(`thunder ${v} → ${e}`, () => eq(classify('thunder', v), e)));
+  t('worst() picks NO-GO over MARGINAL/GO', () => eq(worst(['go', 'marginal', 'nogo', 'go']), 'nogo'));
+  t('worst() ignores N/A', () => eq(worst(['na', 'go']), 'go'));
+  t('worst() of all N/A is N/A', () => eq(worst(['na', 'na']), 'na'));
+
+  // --- Time zone ---
+  t('5:30 PM EDT → 21:30Z (Oct 31)', () => eq(nyToDate(2026, 10, 31, 17, 30).toISOString(), '2026-10-31T21:30:00.000Z'));
+  t('5:30 PM EST → 22:30Z (Nov 1, after DST ends)', () => eq(nyToDate(2026, 11, 1, 17, 30).toISOString(), '2026-11-01T22:30:00.000Z'));
+  t('NY wall clock round-trip', () => { const p = nyParts(nyToDate(2026, 10, 31, 20, 0).getTime()); return eq(`${p.y}-${p.m}-${p.d} ${p.h}:${p.mi}`, '2026-10-31 20:0'); });
+
+  // --- Interpolation ---
+  const T17 = nyToDate(2026, 10, 31, 17, 0).getTime(), T18 = nyToDate(2026, 10, 31, 18, 0).getTime();
+  const ser = [{ t: T17, temp: 50, precip: 10, wind: 10, gust: 15, dir: 350, thunder: 0, code: 1 }, { t: T18, temp: 60, precip: 30, wind: 20, gust: 25, dir: 10, thunder: 40, code: 3 }];
+  const mid = sampleSeries(ser, T17 + 1800000);
+  t('interp: 5:30 temp is midpoint', () => near(mid.temp, 55));
+  t('interp: 5:30 wind is midpoint', () => near(mid.wind, 15));
+  t('interp: 5:30 gust is midpoint', () => near(mid.gust, 20));
+  t('interp: 5:30 precip is midpoint', () => near(mid.precip, 20));
+  t('interp: 5:30 thunder is midpoint', () => near(mid.thunder, 20));
+  t('interp: direction wraps through north (350°→10° ⇒ 0°)', () => near(angDiff(mid.dir, 0), 0, 0.001));
+  t('interp: flagged interpolated', () => eq(mid.interpolated, true));
+  t('interp: exact hour not interpolated', () => eq(sampleSeries(ser, T18).interpolated, false));
+  t('interp: quarter point weights correctly', () => near(sampleSeries(ser, T17 + 900000).wind, 12.5));
+  t('interp: before data → null', () => eq(sampleSeries(ser, T17 - 1), null));
+  t('interp: after data → null', () => eq(sampleSeries(ser, T18 + 1), null));
+  t('interp: >2h gap → null', () => eq(sampleSeries([ser[0], { ...ser[1], t: T17 + 3 * 3600000 }], T17 + 3600000), null));
+  t('interp: empty/invalid series → null', () => eq(sampleSeries([], T17), null) === true && eq(sampleSeries(null, T17), null) === true);
+  t('interp: missing field falls back to other side', () => near(sampleSeries([{ t: T17, wind: null }, { t: T18, wind: 8 }], T17 + 1800000).wind, 8));
+
+  // --- Vector averaging / confidence ---
+  t('vecAvg 350°+10° → north', () => near(angDiff(vecAvg([{ dir: 350, w: 10 }, { dir: 10, w: 10 }]).dir, 0), 0, 0.001));
+  t('vecAvg 90°+270° (equal) → undefined/variable', () => eq(vecAvg([{ dir: 90, w: 10 }, { dir: 270, w: 10 }]).dir, null));
+  t('vecAvg weights toward stronger wind', () => vecAvg([{ dir: 90, w: 30 }, { dir: 180, w: 10 }]).dir < 135 || 'not weighted');
+  t('vecAvg ignores null directions', () => near(vecAvg([{ dir: null, w: 5 }, { dir: 45, w: 5 }]).dir, 45));
+  t('vecAvg zero speeds falls back to unweighted', () => near(vecAvg([{ dir: 80, w: 0 }, { dir: 100, w: 0 }]).dir, 90, 0.001));
+  t('vecAvg empty → null', () => eq(vecAvg([]).dir, null));
+  t('confidence: identical sources → High (100)', () => { const c = confidence(0, 0); return c.level === 'High' && c.score === 100 || JSON.stringify(c); });
+  t('confidence: modest disagreement → Medium', () => eq(confidence(30, 3).level, 'Medium'));
+  t('confidence: opposite directions → Low', () => eq(confidence(180, 10).level, 'Low'));
+  t('confidence: 75 boundary is High', () => eq(confidence(22.5, 2).level, 'High'));
+
+  // --- Parsers ---
+  t('NWS wind "10 mph"', () => near(parseNwsWind('10 mph').mean, 10));
+  t('NWS wind "10 to 15 mph" mean/max', () => { const w = parseNwsWind('10 to 15 mph'); return near(w.mean, 12.5) === true && near(w.max, 15) === true || JSON.stringify(w); });
+  t('NWS wind "Calm" → 0', () => eq(parseNwsWind('Calm').mean, 0));
+  t('NWS wind garbage → null', () => eq(parseNwsWind('n/a'), null));
+  t('NWS wind null → null', () => eq(parseNwsWind(null), null));
+  t('NWS thunder: slight chance → 20', () => eq(nwsThunder('Slight Chance Showers And Thunderstorms'), 20));
+  t('NWS thunder: chance → 40', () => eq(nwsThunder('Chance Showers And Thunderstorms'), 40));
+  t('NWS thunder: likely → 65', () => eq(nwsThunder('Showers And Thunderstorms Likely'), 65));
+  t('NWS thunder: plain → 80', () => eq(nwsThunder('Thunderstorms'), 80));
+  t('NWS thunder: none → 0', () => eq(nwsThunder('Mostly Sunny'), 0));
+  t('cardinal ↔ degrees', () => eq(cardToDeg('SW'), 225) === true && eq(degToCard(225), 'SW') === true && eq(degToCard(359), 'N') === true || 'mismatch');
+  t('Open-Meteo parse rejects missing hourly', () => { try { parseOpenMeteo({}); return 'did not throw'; } catch (e) { return true; } });
+  t('Open-Meteo parse rejects API error', () => { try { parseOpenMeteo({ error: true, reason: 'x' }); return 'did not throw'; } catch (e) { return true; } });
+  t('NWS parse rejects empty periods', () => { try { parseNws({ properties: { periods: [] } }); return 'did not throw'; } catch (e) { return true; } });
+  t('NOAA parse rejects error payload', () => { try { parseNoaa({ error: { message: 'bad' } }); return 'did not throw'; } catch (e) { return true; } });
+  t('NOAA parse handles H/L events', () => { const e = parseNoaa({ predictions: [{ t: '2026-10-31 10:00', v: '3.1', type: 'H' }, { t: '2026-10-31 04:00', v: '0.2', type: 'L' }] }); return e[0].type === 'L' && e[1].type === 'H' || 'bad parse'; });
+
+  // --- Tide ---
+  const D = (h, m) => nyToDate(2026, 10, 31, h, m || 0).getTime();
+  const ev = [{ t: D(13, 0), type: 'L', v: 0.2 }, { t: D(19, 0), type: 'H', v: 3.2 }, { t: D(25, 0), type: 'L', v: 0.1 }];
+  t('tide: rising toward high → Flood', () => eq(tideAt(ev, D(16, 0)).state, 'Flood'));
+  t('tide: falling toward low → Ebb', () => eq(tideAt(ev, D(22, 0)).state, 'Ebb'));
+  t('tide: exactly at high → Ebb', () => eq(tideAt(ev, D(19, 0)).state, 'Ebb'));
+  t('tide: midpoint height is average', () => near(tideAt(ev, D(16, 0)).height, 1.7, 0.001));
+  t('tide: slack flagged within 20 min of extreme', () => eq(tideAt(ev, D(18, 50)).slack, true));
+  t('tide: not slack mid-cycle', () => eq(tideAt(ev, D(16, 0)).slack, false));
+  t('tide: before first event → null', () => eq(tideAt(ev, D(12, 0)), null));
+  t('tide: after last event → null', () => eq(tideAt(ev, D(26, 0)), null));
+  t('tide summary: next high/low and minutes to change', () => { const s = buildTide(ev, D(16, 0)); return s.available && s.nextHigh.t === D(19, 0) && s.nextLow.t === D(25, 0) && Math.round(s.minsToChange) === 180 || JSON.stringify(s); });
+  t('tide summary: null events → unavailable', () => eq(buildTide(null, D(12, 0)).available, false));
+  t('duration format', () => eq(fmtDur(102), '1h 42m') === true && eq(fmtDur(45), '45m') === true || 'bad format');
+
+  // --- Tuning bands (guide uses knots) ---
+  [[0,'light'],[6,'light'],[6.49,'light'],[6.5,'medium'],[12,'medium'],[12.49,'medium'],[12.5,'medheavy'],[19,'medheavy'],[19.49,'medheavy'],[19.5,'heavy'],[35,'heavy']]
+    .forEach(([kt, id]) => t(`tuning band at ${kt} kt → ${id}`, () => eq(BANDS[bandIndexForKt(kt)].id, id)));
+  t('tuning band NaN → -1', () => eq(bandIndexForKt(NaN), -1));
+  t('mph→kt conversion', () => near(mphToKt(11.5078), 10, 0.001));
+
+  // --- Full-model scenarios ---
+  const NOW = nyToDate(2026, 10, 31, 9, 0);
+  const mk = o => { const a = []; for (let h = 12; h <= 22; h++) a.push(Object.assign({ t: D(h), temp: 55, precip: 10, wind: 8, gust: 12, dir: 200, thunder: 0, code: 1 }, o ? o(h) : {})); return a; };
+  const evs = [{ t: D(8), type: 'L', v: 0.3 }, { t: D(14), type: 'H', v: 3.0 }, { t: D(20, 30), type: 'L', v: 0.2 }, { t: D(26), type: 'H', v: 3.1 }];
+  let m = buildModel({ now: NOW, omSeries: mk(), nwsSeries: mk(), tideEvents: evs });
+  t('model: exactly 4 rows with required labels', () => eq(m.rows.map(r => r.label).join('|'), '5:30 PM|6:00 PM|7:00 PM|8:00 PM'));
+  t('model: only 5:30 is interpolated', () => eq(m.rows.map(r => r.interpolated).join(), 'true,false,false,false'));
+  t('model: calm day → GO', () => eq(m.status.label, 'GO'));
+  t('model: consensus enabled with High confidence', () => m.wind.consensus.enabled && m.wind.consensus.confidence.level === 'High' || 'no consensus');
+  t('model: consensus speed averages sources', () => { const x = buildModel({ now: NOW, omSeries: mk(() => ({ wind: 10 })), nwsSeries: mk(() => ({ wind: 14 })), tideEvents: evs }); return near(x.wind.consensus.speed, 12, 0.001); });
+  t('model: tide state per row (ebb toward 8:30 PM low)', () => m.rows.every(r => r.tide && r.tide.state === 'Ebb') || m.rows.map(r => r.tide && r.tide.state).join());
+  m = buildModel({ now: NOW, omSeries: mk(() => ({ wind: 17 })), nwsSeries: mk(), tideEvents: evs });
+  t('model: wind 17 → MARGINAL (conservative max of sources)', () => eq(m.status.label, 'MARGINAL'));
+  m = buildModel({ now: NOW, omSeries: mk(h => h === 19 ? { gust: 26 } : {}), nwsSeries: mk(), tideEvents: evs });
+  t('model: gust 26 at 7 PM → NO-GO, peak 7:00 PM', () => eq(m.status.label, 'NO-GO') === true && eq(m.status.peaks.gust, '7:00 PM') === true || m.status.label);
+  m = buildModel({ now: NOW, omSeries: mk(h => h === 20 ? { code: 95, thunder: 60 } : {}), nwsSeries: mk(), tideEvents: evs });
+  t('model: thunderstorm code → NO-GO via thunder', () => eq(m.status.levels.thunder, 'nogo'));
+  m = buildModel({ now: NOW, omSeries: mk(() => ({ precip: 60 })), nwsSeries: mk(), tideEvents: evs });
+  t('model: precip 60% → MARGINAL', () => eq(m.status.label, 'MARGINAL'));
+  m = buildModel({ now: NOW, omSeries: mk(), nwsSeries: null, tideEvents: evs });
+  t('NWS failure: status still computed from Open-Meteo', () => eq(m.status.label, 'GO'));
+  t('NWS failure: consensus disabled', () => eq(m.wind.consensus.enabled, false) === true && /NWS unavailable/.test(m.wind.consensus.reason) || 'not disabled');
+  t('NWS failure: tuning falls back to Open-Meteo', () => m.tuning.available && /Open-Meteo wind only/.test(m.tuning.basis) || 'no fallback');
+  m = buildModel({ now: NOW, omSeries: mk(), nwsSeries: mk(), tideEvents: null });
+  t('NOAA failure: tide unavailable but app continues', () => m.tide.available === false && m.status.label === 'GO' && m.rows.every(r => r.tide === null) || 'broken');
+  m = buildModel({ now: NOW, omSeries: null, nwsSeries: mk(), tideEvents: evs });
+  t('Open-Meteo failure: NWS-only data and consensus disabled', () => m.status.label === 'GO' && m.wind.consensus.enabled === false || 'broken');
+  m = buildModel({ now: NOW, omSeries: null, nwsSeries: null, tideEvents: null });
+  t('all sources down: UNAVAILABLE, no exceptions', () => eq(m.status.label, 'UNAVAILABLE') === true && m.tuning.available === false || 'broken');
+  m = buildModel({ now: NOW, omSeries: mk().filter(p => p.t < D(19)), nwsSeries: mk(), tideEvents: evs });
+  t('partial coverage: rows outside data are null, not crashes', () => m.rows[2].om === null && m.rows[0].om !== null || 'unexpected');
+  m = buildModel({ now: nyToDate(2026, 10, 31, 21, 0), omSeries: mk(), nwsSeries: mk(), tideEvents: evs });
+  t('after 8 PM: windowPassed flag set', () => eq(m.windowPassed, true));
+  m = buildModel({ now: NOW, omSeries: mk(() => ({ wind: 24 })), nwsSeries: mk(() => ({ wind: 24, gust: 30 })), tideEvents: evs });
+  t('tuning: 24 mph (≈21 kt) → Heavy Air', () => eq(m.tuning.band.id, 'heavy'));
+  m = buildModel({ now: NOW, omSeries: mk(() => ({ wind: 5, gust: 16 })), nwsSeries: mk(() => ({ wind: 5 })), tideEvents: evs });
+  t('tuning: light wind + strong gusts adds gust note', () => eq(m.tuning.band.id, 'light') === true && m.tuning.notes.some(n => /Gusts to/.test(n)) || 'no gust note');
+
+  const passed = R.filter(r => r.pass).length;
+  console.log(`[SailDash] Tests: ${passed}/${R.length} passed`);
+  console.table(R.filter(r => !r.pass).length ? R.filter(r => !r.pass) : [{ result: 'all tests passed', count: R.length }]);
+  const out = $('diagOut');
+  if (out) out.innerHTML = `<div class="${passed === R.length ? 'c-go' : 'c-nogo'}" style="font-weight:700;margin-bottom:6px">${passed}/${R.length} tests passed</div>` +
+    `<div class="tablewrap"><table class="testtbl"><tbody>${R.map(r => `<tr><td class="${r.pass ? 'c-go' : 'c-nogo'}">${r.pass ? '✔' : '✘'}</td><td>${esc(r.test)}</td><td>${esc(r.detail)}</td></tr>`).join('')}</tbody></table></div>`;
+  return { passed, total: R.length, failed: R.filter(r => !r.pass) };
+}
+
+/** Recovery test: forces each source to fail, checks graceful degradation, then verifies recovery. Uses live network for the recovery steps. */
+async function recoveryTest() {
+  const res = []; const check = (name, ok) => { res.push({ test: name, pass: !!ok }); };
+  const saved = Object.assign({}, sim.fail);
+  try {
+    sim.fail.nws = true; await loadNWS();
+    check('NWS forced failure → error state', state.nws.status === 'error');
+    check('NWS failure → consensus disabled, app still renders', state.model && state.model.wind.consensus.enabled === false);
+    sim.fail.nws = false; await loadNWS();
+    check('NWS recovers after retry', state.nws.status === 'ok');
+
+    sim.fail.noaa = true; await loadNOAA();
+    check('NOAA forced failure → tide unavailable', state.noaa.status === 'error' && state.model.tide.available === false);
+    sim.fail.noaa = false; await loadNOAA();
+    check('NOAA recovers after retry', state.noaa.status === 'ok' && state.model.tide.available === true);
+
+    sim.fail.om = true; await loadOM();
+    check('Open-Meteo forced failure → error card shown', state.om.status === 'error' && /Open-Meteo is unavailable/.test($('banners') ? $('banners').innerHTML : 'Open-Meteo is unavailable'));
+    sim.fail.om = false; await loadOM();
+    check('Open-Meteo recovers after retry', state.om.status === 'ok');
+  } catch (e) { check('recovery test threw: ' + e.message, false); }
+  Object.assign(sim.fail, saved);
+  commit();
+  console.log('[SailDash] Recovery test'); console.table(res);
+  const out = $('diagOut');
+  if (out) out.innerHTML = `<div style="font-weight:700;margin-bottom:6px">Recovery test: ${res.filter(r => r.pass).length}/${res.length} passed</div>` +
+    `<div class="tablewrap"><table class="testtbl"><tbody>${res.map(r => `<tr><td class="${r.pass ? 'c-go' : 'c-nogo'}">${r.pass ? '✔' : '✘'}</td><td>${esc(r.test)}</td></tr>`).join('')}</tbody></table></div>`;
+  return res;
+}
+
+/* =====================================================================
+   CONSOLE HOOKS
+   ===================================================================== */
+window.SailDash = {
+  state, CONFIG, refresh: () => refreshAll('console'), retry, runTests, recoveryTest,
+  simulate: {
+    fail: (s, on) => { if (!(s in sim.fail)) return warn('unknown source', s); sim.fail[s] = on !== false; log('simulate fail', s, sim.fail[s]); },
+    recover: s => { sim.fail[s] = false; log('simulate recover', s); },
+    clear: () => { Object.keys(sim.fail).forEach(k => { sim.fail[k] = false; }); sim.delayMs = 0; log('simulation cleared'); },
+    delay: ms => { sim.delayMs = +ms || 0; },
+    status: () => JSON.parse(JSON.stringify(sim))
+  },
+  helpers: { classify, sampleSeries, vecAvg, confidence, buildModel, buildConsensus, tideAt, nyToDate, parseNwsWind, nwsThunder, bandIndexForKt, BANDS }
+};
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+function init() {
+  window.addEventListener('error', e => err('Uncaught error:', e.message));
+  window.addEventListener('unhandledrejection', e => err('Unhandled rejection:', e.reason));
+
+  const qs = new URLSearchParams(location.search);
+  (qs.get('fail') || '').split(',').map(s => s.trim()).filter(Boolean).forEach(s => { if (s in sim.fail) { sim.fail[s] = true; warn('Simulating failure for', s); } });
+
+  document.addEventListener('click', ev => {
+    const b = ev.target.closest && ev.target.closest('[data-retry]');
+    if (b) retry(b.getAttribute('data-retry'));
+  });
+  $('btnRefresh').addEventListener('click', () => refreshAll('manual'));
+  $('btnSnap').addEventListener('click', downloadSnapshot);
+  $('btnTests').addEventListener('click', () => runTests());
+  $('btnRecovery').addEventListener('click', () => recoveryTest());
+
+  if (qs.has('debug') || qs.has('test')) $('diag').hidden = false;
+
+  commit();
+  refreshAll('load').then(() => { if (qs.has('test')) runTests(); });
+
+  setInterval(() => { if ($('chkAuto').checked && !document.hidden) refreshAll('auto'); }, CONFIG.autoRefreshMs);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && $('chkAuto').checked && state.lastRefresh && Date.now() - state.lastRefresh > 10 * 60000) refreshAll('visible');
+  });
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+</body>
+</html>
